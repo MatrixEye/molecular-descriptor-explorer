@@ -1,3 +1,4 @@
 streamlit
 pandas
 rdkit
+py3Dmol
