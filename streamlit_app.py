@@ -11,6 +11,7 @@ The application:
 - reserves space for future ML predictions.
 """
 
+import hmac
 import html
 import math
 import re
@@ -39,6 +40,90 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+
+# =============================================================
+# TEMPORARY PASSWORD PROTECTION
+# =============================================================
+
+def check_password():
+    """Check the submitted password without exposing the secret."""
+
+    entered_password = st.session_state.get(
+        "password_input",
+        "",
+    )
+
+    expected_password = str(
+        st.secrets["auth"]["password"]
+    )
+
+    if hmac.compare_digest(
+        entered_password,
+        expected_password,
+    ):
+        st.session_state["authenticated"] = True
+    else:
+        st.session_state["authenticated"] = False
+
+    st.session_state["password_input"] = ""
+
+
+def require_password():
+    """Stop the application until the correct password is entered."""
+
+    try:
+        auth_settings = st.secrets["auth"]
+        password_enabled = bool(
+            auth_settings.get(
+                "enabled",
+                True,
+            )
+        )
+        auth_settings["password"]
+
+    except (KeyError, FileNotFoundError):
+        st.error(
+            "Application password has not been configured."
+        )
+        st.stop()
+
+    if not password_enabled:
+        return
+
+    if st.session_state.get("authenticated", False):
+        with st.sidebar:
+            if st.button(
+                "Log out",
+                use_container_width=True,
+            ):
+                st.session_state["authenticated"] = False
+                st.rerun()
+
+        return
+
+    st.title("Molecular Descriptor Explorer")
+    st.write(
+        "This application is currently in private testing."
+    )
+
+    st.text_input(
+        "Password",
+        type="password",
+        key="password_input",
+        on_change=check_password,
+        placeholder="Enter the testing password",
+    )
+
+    if (
+        "authenticated" in st.session_state
+        and not st.session_state["authenticated"]
+    ):
+        st.error("Incorrect password.")
+
+    st.stop()
+
+
+require_password()
 
 # =============================================================
 # STYLE
