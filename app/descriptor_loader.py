@@ -226,6 +226,13 @@ class DescriptorLoader:
             self.fda[self.REQUIRED_ID_COLUMN].astype(str)
         )
 
+        # Remove repeated records for the same conformer ID.
+        # The duplicates differ only in an accidental saved index column.
+        self.metadata = self.metadata.drop_duplicates(
+            subset=[self.REQUIRED_ID_COLUMN],
+            keep="first",
+        ).copy()
+
         # ---------------------------------------------------------
         # Main indexed tables
         # ---------------------------------------------------------
@@ -234,7 +241,6 @@ class DescriptorLoader:
             self.REQUIRED_ID_COLUMN,
             drop=True,
         )
-
         self.fmo_index = self.fmo.set_index(
             self.REQUIRED_ID_COLUMN,
             drop=True,

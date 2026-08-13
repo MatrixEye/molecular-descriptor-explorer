@@ -65,7 +65,7 @@ class SearchEngine:
     # CHEMBL25
     # CHEMBL25_1
     CHEMBL_PATTERN = re.compile(
-        r"^CHEMBL\d+(?:_\d+)?$",
+        r"^CHEMBL\d+(?:_C\d+)?$",
         flags=re.IGNORECASE,
     )
 
